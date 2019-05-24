@@ -39,7 +39,6 @@ def get_untreated_servers():
 
         # 过滤出符合条件的 服务器的。 主机名
         result = models.Server.objects.filter(condition).values('hostname')
-        print(result)
         response.data = list(result)
         response.status = True
     except Exception as e:
@@ -171,9 +170,11 @@ class HandleNic(object):
         # 数据库有 但是新汇报的 没有的
         del_list = agorithm.get_exclude(nic_name_list, client_nic_dict)
 
-        HandleNic._update_nic(update_list, nic_obj_list, client_nic_dict, server_obj, user_obj)  # 更新
         HandleNic._add_nic(add_list, client_nic_dict, server_obj, user_obj)  # 添加
+        HandleNic._update_nic(update_list, nic_obj_list, client_nic_dict, server_obj, user_obj)  # 更新
         HandleNic._del_nic(del_list, nic_obj_list, server_obj, user_obj)  # 删除
+
+        return response
 
     @staticmethod
     def _add_nic(add_list, client_nic_dict, server_obj, user_obj):

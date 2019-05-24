@@ -1,9 +1,10 @@
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+# 这两个包组合使用，用于在CBV模式中，可以单独为某个类方法，取消token 验证
 from django.views import View
 from django.http import JsonResponse
 import json
 from importlib import import_module
-from django.utils.decorators import method_decorator
 from utils.auth import api_auth
 from api import config
 from api.service import asset

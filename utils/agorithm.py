@@ -9,7 +9,7 @@ def get_intersection(*args):
     :return:并集列表
     '''
     base = args[0]
-    result = base.intersection(*args)
+    result = base.intersection(args[1])
     # intersection 求两个集合的并集。
     return list(result)
 

@@ -25,7 +25,7 @@ SECRET_KEY = '6mg1zack(xz)f65696drr8_#s!f(&7m7hfn2$$)8vzr2&e_w)t'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = []  # 部署时 这个要添加  "*"
 
 
 # Application definition
@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
-    'repository'
+    'repository',
+    'web',
 ]
 
 MIDDLEWARE = [
@@ -121,9 +122,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = (
-#     os.path.join(BASE_DIR, 'web', 'static'),
-# )
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'web', 'static'),
+)
+
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # 用于ngnix 部署时使用！
 
 ASSET_AUTH_KEY = '299095cc-1330-11e5-b06a-a45e60bec08b'  # 用于认证的key
 ASSET_AUTH_HEADER_NAME = 'HTTP_AUTH_KEY'  # 名字
