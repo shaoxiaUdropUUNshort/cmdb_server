@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap/css/bootstrap.css' %}">
+    <title>Title</title>
+</head>
+<body>
+<h1>资产详情页</h1>
+
+<div class="col-md-6 col-md-offset-3">
+    <table class="table-bordered table">
+        <thead id="table_th">
+
+        </thead>
+
+        <tbody id="table_tb"></tbody>
+    </table>
+</div>
+</body>
+
+<script type="text/javascript" src="{% static 'js/jquery-1.12.4.js' %}"></script>
+<script type="text/javascript">
+
+    $(function () {
+        init();
+        String.prototype.myFormat = function (kwargs) {
+            return ret = this.replace(/\{(\w)\}/g, function (substring, args) {
+                return kwargs[args]
+            });
+        }
+    });
+
+    function init() {
+        $.ajax({
+            url: '/web/asset-json.html/',
+            type: 'GET',
+            dataType: "JSON",  //数据类型
+            success: function (response) {
+                initGlobleData(response.global_dict);
+                initHeader(response.table_config);
+                initBody(response.data_list, response.table_config);
+            }
+        })
+    }
+
+
+
+    // 表格头显示
+    function initHeader(table_config) {
+
+        /*  //目标
+        <tr>
+            <th>ID</th>
+            <th>业务线</th>
+            ......
+        </tr>
+        */
+        var $tr = window.document.createElement('tr');  //创建tr 标签
+        $.each(table_config, function (k, item) {  //遍历 后端发来的配置文件
+            if (item.display) {
+                var $th = window.document.createElement('th');//创建th 标签
+                $th.innerHTML = item.title;  //添加内容
+                $tr.append($th) //添加到 tr 标签中
+            }
+        });
+        $("#table_th").append($tr)  //tr标签添加到，thead中
+    }
+
+    //表格体显示
+    function initBody(data_list, table_config) {
+        $.each(data_list, function (k, data_dict) {  // 先循环data_list 要显示的每一行
+            var $tr = window.document.createElement('tr');
+            $('#table_tb').append($tr);
+            $.each(table_config, function (ind, item) {
+                if (item.display) {//再循环table_config 确定每一行中的每一列，应该显示哪些内容
+                    var kwargs = {};
+                    $.each(item.text.kwargs, function (key, value) {  //'kwargs': {'n': '@cabinet_order'}
+                        if (value.startsWith("@@")) {
+                            var global_name = value.substring(2, value.length);  // 拿到全局变量的名字
+                            var current_id = data_dict[item.query];  // 获取的是 数据库中存储的 数字 的值。
+                            var t = getTextFromGlobalById(global_name, current_id);  //从全局变量中取出对应id的文本
+                            kwargs[key] = t
+                        }else if (value.startsWith('@')){
+                            kwargs[key] = data_dict[value.substring(1, value.length)]; //相当于切片 [1:len(list)] 不要第一个要后面的
+                        }else {
+                            kwargs[key] = value
+                        }
+                    });
+                    var $td = window.document.createElement('td');
+                    var temp = item.text.content.myFormat(kwargs);  //使用自定制的 格式化工具 进行格式化
+                    $td.innerHTML = temp;
+                    $tr.append($td);
+                }
+            });
+        });
+    }
+
+    // 将choice这种字段，设置成全局变量， 方便编辑添加时。 更容易调用
+    function initGlobleData(global_dict) {
+        $.each(global_dict, function (k, v) {
+            // k = device_type_choices  和  device_status_choices  这两个字符串就是全局的变量，并且他们都对应他们自己的值
+            // v = [[0, 'xx'], [1, 'yy']]   models.Asset.device_type_choices
+            window[k] = v   // 设置成全局变量。
+        })
+    }
+
+    // 从全局变量中，获取到 choice字段的文本信息。
+    function getTextFromGlobalById(global_name, current_id) {
+        // global_name = device_type_choices   current_id=1
+        var ret = null;
+        $.each(window[global_name], function (k, item) {
+            if (item[0]===current_id) {
+                return ret = item[1];
+                // 不能在这里直接return 否则他只是退出了 each 的循环。而且return的值，不会返回到最外层。还在这个函数里面。
+                // 所以 使用另一个变量，来接收一下。
+            }
+        });
+        return ret
+    }
+
+</script>
+</html>
